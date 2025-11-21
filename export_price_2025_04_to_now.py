@@ -21,7 +21,7 @@ query = f'''
 SELECT ann_num AS "공고번호", date AS "날짜", base_price AS "기초가", predict_price AS "예가", bid_price AS "투찰가"
 FROM price_set
 WHERE date >= ? AND date <= ?
-ORDER BY date ASC
+ORDER BY date DESC
 '''
 
 def main():

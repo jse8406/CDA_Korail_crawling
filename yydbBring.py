@@ -19,7 +19,7 @@ print(maximum)
 price_db = PriceDB(db_path)
 price_db.init_db()
 start_num = int(maximum.values[0,0] + 1)
-for i in range(2000):
+for i in range(500):
     try:
         url = f"https://ebid.korail.com/goods/printOpen.do?gubun=1&zzbidinv={start_num+i}-00&zzstnum=00"
         driver.get(url)
