@@ -229,12 +229,22 @@ def main():
 
     # 선택적으로 export_price_2025_04_to_now.py를 실행하여 CSV를 갱신할 수 있음
     if args.export_csv:
-        print('\n📤 export_price_2025_04_to_now.py 실행 (DB -> CSV)')
-        export_success = automator.run_crawler('export_price_2025_04_to_now.py')
-        if export_success:
+        print('\n📤 export_price_2025_04_to_now.py 실행 (용역 DB -> CSV)')
+        export_yy_success = automator.run_crawler('export_price_2025_04_to_now.py')
+        print('\n📤 export_price_mp_2025_04_to_now.py 실행 (물품 DB -> CSV)')
+        export_mp_success = automator.run_crawler('export_price_mp_2025_04_to_now.py')
+        if export_yy_success and export_mp_success:
             print('✅ CSV 내보내기 완료')
         else:
             print('⚠️  CSV 내보내기 실패')
+        
+        # average.py 실행하여 JSON 파일 업데이트
+        print('\n📊 average.py 실행 (DB -> JSON)')
+        avg_success = automator.run_crawler('average.py')
+        if avg_success:
+            print('✅ JSON 업데이트 완료')
+        else:
+            print('⚠️  JSON 업데이트 실패')
 
     sys.exit(0 if success else 1)
 
