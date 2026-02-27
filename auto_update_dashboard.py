@@ -24,13 +24,17 @@ class DashboardAutomator:
         self.yy_db_path = os.path.join(self.base_dir, 'db', 'yongyuk.db')
         self.script_js_path = os.path.join(self.base_dir, 'html', 'script.js')
         
-    def run_crawler(self, crawler_script):
+    def run_crawler(self, crawler_script, args=None):
         """크롤러 스크립트 실행"""
         try:
-            print(f"🕷️  {crawler_script} 실행 중...")
+            cmd = [sys.executable, crawler_script]
+            if args:
+                cmd.extend(args)
+                
+            print(f"🕷️  {' '.join(cmd)} 실행 중...")
             # Run subprocess without capture_output so child process stdout/stderr
             # are forwarded to this console (shows crawler logs in real time).
-            result = subprocess.run([sys.executable, crawler_script], cwd=self.base_dir)
+            result = subprocess.run(cmd, cwd=self.base_dir)
             if result.returncode == 0:
                 print(f"✅ {crawler_script} 실행 완료")
                 return True
@@ -120,30 +124,33 @@ class DashboardAutomator:
                 formatted_rows = [f"[{', '.join(map(str, row))}]" for row in data]
                 return f"[{', '.join(formatted_rows)}]"
 
-            # 2025년 물품 비율
+            # 동적 연도 적용
+            target_year = self.year
+
+            # 물품 비율 업데이트
             content = re.sub(
-                r"(const yValrate2025\s*=\s*)\[.*?\];",
+                fr"(const yValrate{target_year}\s*=\s*)\[.*?\];",
                 f"\\1{format_js_array(mp_rate_data)};",
                 content,
                 flags=re.DOTALL
             )
-            # 2025년 물품 수량
+            # 물품 수량 업데이트
             content = re.sub(
-                r"(const yValamt2025\s*=\s*)\[.*?\];",
+                fr"(const yValamt{target_year}\s*=\s*)\[.*?\];",
                 f"\\1{format_js_array(mp_amt_data)};",
                 content,
                 flags=re.DOTALL
             )
-            # 2025년 용역 비율
+            # 용역 비율 업데이트
             content = re.sub(
-                r"(const yValrate2025yy\s*=\s*)\[.*?\];",
+                fr"(const yValrate{target_year}yy\s*=\s*)\[.*?\];",
                 f"\\1{format_js_array(yy_rate_data)};",
                 content,
                 flags=re.DOTALL
             )
-            # 2025년 용역 수량
+            # 용역 수량 업데이트
             content = re.sub(
-                r"(const yValamt2025yy\s*=\s*)\[.*?\];",
+                fr"(const yValamt{target_year}yy\s*=\s*)\[.*?\];",
                 f"\\1{format_js_array(yy_amt_data)};",
                 content,
                 flags=re.DOTALL
@@ -238,9 +245,9 @@ def main():
         else:
             print('⚠️  CSV 내보내기 실패')
         
-        # average.py 실행하여 JSON 파일 업데이트
+        # average.py 실행하여 JSON 파일 업데이트 (연도 전달)
         print('\n📊 average.py 실행 (DB -> JSON)')
-        avg_success = automator.run_crawler('average.py')
+        avg_success = automator.run_crawler('average.py', args=['--year', automator.year])
         if avg_success:
             print('✅ JSON 업데이트 완료')
         else:
